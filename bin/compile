@@ -1,2 +1,6 @@
 #!/usr/bin/env bash
-./node_modules/.bin/tsc
+DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
+(
+    cd "${DIR}"
+    ../node_modules/.bin/tsc
+)
