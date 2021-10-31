@@ -1,4 +1,33 @@
 "use strict";
+var Floppy;
+(function (Floppy) {
+    var testLocalStorageWorks = function () {
+        try {
+            window.localStorage.setItem('test', 'test');
+            window.localStorage.removeItem('test');
+            return true;
+        }
+        catch (_a) {
+            return false;
+        }
+    };
+    var isLsEnabled = testLocalStorageWorks();
+    Floppy.storage = {
+        setHighScore: function (score) {
+            if (!isLsEnabled) {
+                return;
+            }
+            window.localStorage.setItem('highscore', score.toString());
+        },
+        getHighScore: function () {
+            var _a;
+            if (!isLsEnabled) {
+                return 0;
+            }
+            return parseInt((_a = window.localStorage.getItem('highscore')) !== null && _a !== void 0 ? _a : '0');
+        },
+    };
+})(Floppy || (Floppy = {}));
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -35,6 +64,76 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var Floppy;
+(function (Floppy) {
+    var Bird = (function () {
+        function Bird(domElement, flyingProperties) {
+            this.domElement = domElement;
+            this.flyingProperties = flyingProperties;
+            this.reset();
+        }
+        Bird.prototype.reset = function () {
+            this.width = 34;
+            this.height = 24;
+            this.velocity = 0;
+            this.position = 180;
+            this.rotation = 0;
+            this.box = { x: 60, y: 180, width: 34, height: 24 };
+        };
+        Bird.prototype.jump = function () {
+            this.velocity = this.flyingProperties.jumpVelocity;
+            sounds.jump.play();
+        };
+        Bird.prototype.die = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            this.domElement.style.transition = "\n                transform 1s cubic-bezier(0.65, 0, 0.35, 1)\n            ";
+                            this.position = this.flyingProperties.flightAreaBox.height - this.height;
+                            this.rotation = 90;
+                            sounds.hit.play();
+                            return [4, wait(500)];
+                        case 1:
+                            _a.sent();
+                            sounds.die.play();
+                            return [4, wait(500)];
+                        case 2:
+                            _a.sent();
+                            this.domElement.style.transition = '';
+                            return [2];
+                    }
+                });
+            });
+        };
+        Bird.prototype.tick = function () {
+            this.velocity += this.flyingProperties.gravity;
+            this.rotation = Math.min((this.velocity / 10) * 90, 90);
+            this.position += this.velocity;
+            if (this.position < 0) {
+                this.position = 0;
+            }
+            if (this.position > this.flyingProperties.flightAreaBox.height) {
+                this.position = this.flyingProperties.flightAreaBox.height;
+            }
+            var rotationInRadians = Math.abs(toRad(this.rotation));
+            var widthMultiplier = this.height - this.width;
+            var heightMultiplier = this.width - this.height;
+            this.box.width = this.width + (widthMultiplier * Math.sin(rotationInRadians));
+            this.box.height = this.height + (heightMultiplier * Math.sin(rotationInRadians));
+            var xShift = (this.width - this.box.width) / 2;
+            var yShift = (this.height - this.box.height) / 2;
+            this.box.x = 60 + xShift;
+            this.box.y = this.position + yShift + this.flyingProperties.flightAreaBox.y;
+        };
+        Bird.prototype.draw = function () {
+            gameDebugger.drawBox(this.domElement, this.box);
+            this.domElement.style.transform = "\n                translate3d(0px, " + this.position + "px, 0px)\n                rotate3d(0, 0, 1, " + this.rotation + "deg)\n            ";
+        };
+        return Bird;
+    }());
+    Floppy.Bird = Bird;
+})(Floppy || (Floppy = {}));
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
     if (!m) return o;
@@ -60,6 +159,174 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+var Floppy;
+(function (Floppy) {
+    var GameDebugger = (function () {
+        function GameDebugger(enabled) {
+            this.domLogs = document.getElementById('debug-logs');
+            this.domState = document.getElementById('debug-state');
+            this.domBoxContainer = document.getElementById('debug');
+            this.domBoxes = new Map();
+            this.enabled = enabled;
+        }
+        GameDebugger.prototype.drawBox = function (key, box) {
+            if (!this.enabled) {
+                return;
+            }
+            if (!this.domBoxes.has(key)) {
+                var newDebugBox = document.createElement('div');
+                newDebugBox.className = 'boundingbox';
+                this.domBoxContainer.appendChild(newDebugBox);
+                this.domBoxes.set(key, newDebugBox);
+            }
+            var boudingBox = this.domBoxes.get(key);
+            if (boudingBox == null) {
+                this.log("couldn't create a debug box for " + key);
+                return;
+            }
+            boudingBox.style.top = box.y + "px";
+            boudingBox.style.left = box.x + "px";
+            boudingBox.style.width = box.width + "px";
+            boudingBox.style.height = box.height + "px";
+        };
+        GameDebugger.prototype.resetBoxes = function () {
+            var _this = this;
+            if (!this.enabled) {
+                return;
+            }
+            this.domBoxes.forEach(function (debugBox, pipe) {
+                if (pipe.className.includes('pipe')) {
+                    debugBox.remove();
+                    _this.domBoxes.delete(pipe);
+                }
+            });
+        };
+        GameDebugger.prototype.logStateChange = function (oldState, newState) {
+            if (!this.enabled) {
+                return;
+            }
+            this.log('Changing state', GameState[oldState], GameState[newState]);
+            this.domState.innerText = GameState[newState];
+        };
+        GameDebugger.prototype.log = function () {
+            var args = [];
+            for (var _i = 0; _i < arguments.length; _i++) {
+                args[_i] = arguments[_i];
+            }
+            if (!this.enabled) {
+                return;
+            }
+            var shortTime = ("00000" + Date.now() % 100000).slice(-5);
+            console.log.apply(console, __spreadArray(["[" + shortTime + "]"], __read(args), false));
+            this.domLogs.innerText += "[" + shortTime + "] " + args.map(function (a) { return a === null || a === void 0 ? void 0 : a.toString(); }).join(' ') + "\n";
+        };
+        return GameDebugger;
+    }());
+    Floppy.GameDebugger = GameDebugger;
+})(Floppy || (Floppy = {}));
+var Floppy;
+(function (Floppy) {
+    var Land = (function () {
+        function Land(domElement) {
+            this.domElement = domElement;
+            this.box = domElement.getBoundingClientRect();
+            gameDebugger.drawBox(this.domElement, this.box);
+        }
+        Land.prototype.intersectsWith = function (box) {
+            return isBoxIntersecting(this.box, box);
+        };
+        return Land;
+    }());
+    Floppy.Land = Land;
+})(Floppy || (Floppy = {}));
+var Floppy;
+(function (Floppy) {
+    var Pipe = (function () {
+        function Pipe(options) {
+            this.scored = false;
+            this.upperBox = { x: 0, y: 0, width: 0, height: 0 };
+            this.lowerBox = { x: 0, y: 0, width: 0, height: 0 };
+            this.domElement = document.createElement('div');
+            this.domElement.className = 'pipe animated';
+            this.upperPipeDomElement = document.createElement('div');
+            this.upperPipeDomElement.className = 'pipe_upper';
+            this.upperPipeDomElement.style.height = options.topPipeHeight + "px";
+            this.lowerPipeDomElement = document.createElement('div');
+            this.lowerPipeDomElement.className = 'pipe_lower';
+            this.lowerPipeDomElement.style.height = options.bottomPipeHeight + "px";
+            this.domElement.appendChild(this.upperPipeDomElement);
+            this.domElement.appendChild(this.lowerPipeDomElement);
+        }
+        Pipe.prototype.isOffScreen = function () {
+            return this.upperBox.x <= -100;
+        };
+        Pipe.prototype.hasCrossed = function (box) {
+            return this.upperBox.width !== 0 && this.upperBox.x + this.upperBox.width <= box.x;
+        };
+        Pipe.prototype.intersectsWith = function (box) {
+            return isBoxIntersecting(this.upperBox, box) || isBoxIntersecting(this.lowerBox, box);
+        };
+        Pipe.prototype.tick = function () {
+            this.upperBox = this.upperPipeDomElement.getBoundingClientRect();
+            this.lowerBox = this.lowerPipeDomElement.getBoundingClientRect();
+            gameDebugger.drawBox(this.upperPipeDomElement, this.upperBox);
+            gameDebugger.drawBox(this.lowerPipeDomElement, this.lowerBox);
+        };
+        return Pipe;
+    }());
+    Floppy.Pipe = Pipe;
+})(Floppy || (Floppy = {}));
+var Floppy;
+(function (Floppy) {
+    var PipeManager = (function () {
+        function PipeManager(pipeAreaDomElement) {
+            this.pipeDelay = 1400;
+            this.lastPipeInsertedTimestamp = 0;
+            this.pipes = [];
+            this.pipeAreaDomElement = pipeAreaDomElement;
+        }
+        PipeManager.prototype.tick = function (now) {
+            this.pipes.forEach(function (pipe) { return pipe.tick(); });
+            if (now - this.lastPipeInsertedTimestamp < this.pipeDelay) {
+                return;
+            }
+            gameDebugger.log('inserting pipe after', now - this.lastPipeInsertedTimestamp, 'ms');
+            this.lastPipeInsertedTimestamp = now;
+            var pipeDimension = this.createPipeDimensions({ gap: 90, minDistanceFromEdges: 80 });
+            var pipe = new Floppy.Pipe(pipeDimension);
+            this.pipes.push(pipe);
+            this.pipeAreaDomElement.appendChild(pipe.domElement);
+            this.pipes = this.pipes.filter(function (pipe) {
+                if (pipe.isOffScreen()) {
+                    gameDebugger.log('pruning a pipe');
+                    pipe.domElement.remove();
+                    return false;
+                }
+                return true;
+            });
+        };
+        PipeManager.prototype.intersectsWith = function (box) {
+            return this.pipes.find(function (pipe) { return pipe.intersectsWith(box); }) != null;
+        };
+        PipeManager.prototype.removeAll = function () {
+            this.pipes.forEach(function (pipe) { return pipe.domElement.remove(); });
+            this.pipes = [];
+        };
+        PipeManager.prototype.nextUnscoredPipe = function () {
+            return this.pipes.find(function (pipe) { return pipe.scored === false; });
+        };
+        PipeManager.prototype.createPipeDimensions = function (options) {
+            var topPipeHeight = this.randomNumberBetween(80, 250);
+            var bottomPipeHeight = 420 - options.gap - topPipeHeight;
+            return { topPipeHeight: topPipeHeight, bottomPipeHeight: bottomPipeHeight };
+        };
+        PipeManager.prototype.randomNumberBetween = function (min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        };
+        return PipeManager;
+    }());
+    Floppy.PipeManager = PipeManager;
+})(Floppy || (Floppy = {}));
 var GameState;
 (function (GameState) {
     GameState[GameState["Loading"] = 0] = "Loading";
@@ -92,98 +359,7 @@ var isBoxIntersecting = function (a, b) {
         a.y <= (b.y + b.height) &&
         b.y <= (a.y + a.height));
 };
-var GameDebugger = (function () {
-    function GameDebugger(enabled) {
-        this.domLogs = document.getElementById('debug-logs');
-        this.domState = document.getElementById('debug-state');
-        this.domBoxContainer = document.getElementById('debug');
-        this.domBoxes = new Map();
-        this.enabled = enabled;
-    }
-    GameDebugger.prototype.drawBox = function (key, box) {
-        if (!this.enabled) {
-            return;
-        }
-        if (!this.domBoxes.has(key)) {
-            var newDebugBox = document.createElement('div');
-            newDebugBox.className = 'boundingbox';
-            this.domBoxContainer.appendChild(newDebugBox);
-            this.domBoxes.set(key, newDebugBox);
-        }
-        var boudingBox = this.domBoxes.get(key);
-        if (boudingBox == null) {
-            this.log("couldn't create a debug box for " + key);
-            return;
-        }
-        boudingBox.style.top = box.y + "px";
-        boudingBox.style.left = box.x + "px";
-        boudingBox.style.width = box.width + "px";
-        boudingBox.style.height = box.height + "px";
-    };
-    GameDebugger.prototype.resetBoxes = function () {
-        var _this = this;
-        if (!this.enabled) {
-            return;
-        }
-        this.domBoxes.forEach(function (debugBox, pipe) {
-            if (pipe.className.includes('pipe')) {
-                debugBox.remove();
-                _this.domBoxes.delete(pipe);
-            }
-        });
-    };
-    GameDebugger.prototype.logStateChange = function (oldState, newState) {
-        if (!this.enabled) {
-            return;
-        }
-        this.log('Changing state', GameState[oldState], GameState[newState]);
-        this.domState.innerText = GameState[newState];
-    };
-    GameDebugger.prototype.log = function () {
-        var args = [];
-        for (var _i = 0; _i < arguments.length; _i++) {
-            args[_i] = arguments[_i];
-        }
-        if (!this.enabled) {
-            return;
-        }
-        var shortTime = ("00000" + Date.now() % 100000).slice(-5);
-        console.log.apply(console, __spreadArray(["[" + shortTime + "]"], __read(args), false));
-        this.domLogs.innerText += "[" + shortTime + "] " + args.map(function (a) { return a === null || a === void 0 ? void 0 : a.toString(); }).join(' ') + "\n";
-    };
-    return GameDebugger;
-}());
-var gameDebugger = new GameDebugger(true);
-var gameStorage = new (function () {
-    function class_1() {
-        this.isLsEnabled = false;
-        this.isLsEnabled = this.testLocalStorageWorks();
-    }
-    class_1.prototype.testLocalStorageWorks = function () {
-        try {
-            window.localStorage.setItem('test', 'test');
-            window.localStorage.removeItem('test');
-            return true;
-        }
-        catch (_a) {
-            return false;
-        }
-    };
-    class_1.prototype.setHighScore = function (score) {
-        if (!this.isLsEnabled) {
-            return;
-        }
-        window.localStorage.setItem('highscore', score.toString());
-    };
-    class_1.prototype.getHighScore = function () {
-        var _a;
-        if (!this.isLsEnabled) {
-            return 0;
-        }
-        return parseInt((_a = window.localStorage.getItem('highscore')) !== null && _a !== void 0 ? _a : '0');
-    };
-    return class_1;
-}());
+var gameDebugger = new Floppy.GameDebugger(true);
 var Game = (function () {
     function Game(domElements) {
         this.medals = [
@@ -193,16 +369,16 @@ var Game = (function () {
             [10, 'bronze'],
         ];
         this.domElements = domElements;
-        this.bird = new Bird(domElements.bird, {
+        this.bird = new Floppy.Bird(domElements.bird, {
             gravity: 0.25,
             jumpVelocity: -4.6,
             flightAreaBox: domElements.flightArea.getBoundingClientRect(),
         });
-        this.pipes = new PipeManager(domElements.flightArea);
-        this.land = new Land(domElements.land);
+        this.pipes = new Floppy.PipeManager(domElements.flightArea);
+        this.land = new Floppy.Land(domElements.land);
         this.state = GameState.Loading;
         this.domElements.replayButton.onclick = this.onReplayTouch.bind(this);
-        this.highScore = gameStorage.getHighScore();
+        this.highScore = Floppy.storage.getHighScore();
         this.currentScore = 0;
         requestAnimationFrame(this.draw.bind(this));
     }
@@ -262,7 +438,7 @@ var Game = (function () {
             var _a;
             this._highScore = newScore;
             (_a = this.domElements.highScore).replaceChildren.apply(_a, __spreadArray([], __read(this.numberToImageElements(newScore, 'small')), false));
-            gameStorage.setHighScore(newScore);
+            Floppy.storage.setHighScore(newScore);
         },
         enumerable: false,
         configurable: true
@@ -392,163 +568,6 @@ var Game = (function () {
         this.bird.draw();
     };
     return Game;
-}());
-var Bird = (function () {
-    function Bird(domElement, flyingProperties) {
-        this.domElement = domElement;
-        this.flyingProperties = flyingProperties;
-        this.reset();
-    }
-    Bird.prototype.reset = function () {
-        this.width = 34;
-        this.height = 24;
-        this.velocity = 0;
-        this.position = 180;
-        this.rotation = 0;
-        this.box = { x: 60, y: 180, width: 34, height: 24 };
-    };
-    Bird.prototype.jump = function () {
-        this.velocity = this.flyingProperties.jumpVelocity;
-        sounds.jump.play();
-    };
-    Bird.prototype.die = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.domElement.style.transition = "\n            transform 1s cubic-bezier(0.65, 0, 0.35, 1)\n        ";
-                        this.position = this.flyingProperties.flightAreaBox.height - this.height;
-                        this.rotation = 90;
-                        sounds.hit.play();
-                        return [4, wait(500)];
-                    case 1:
-                        _a.sent();
-                        sounds.die.play();
-                        return [4, wait(500)];
-                    case 2:
-                        _a.sent();
-                        this.domElement.style.transition = '';
-                        return [2];
-                }
-            });
-        });
-    };
-    Bird.prototype.tick = function () {
-        this.velocity += this.flyingProperties.gravity;
-        this.rotation = Math.min((this.velocity / 10) * 90, 90);
-        this.position += this.velocity;
-        if (this.position < 0) {
-            this.position = 0;
-        }
-        if (this.position > this.flyingProperties.flightAreaBox.height) {
-            this.position = this.flyingProperties.flightAreaBox.height;
-        }
-        var rotationInRadians = Math.abs(toRad(this.rotation));
-        var widthMultiplier = this.height - this.width;
-        var heightMultiplier = this.width - this.height;
-        this.box.width = this.width + (widthMultiplier * Math.sin(rotationInRadians));
-        this.box.height = this.height + (heightMultiplier * Math.sin(rotationInRadians));
-        var xShift = (this.width - this.box.width) / 2;
-        var yShift = (this.height - this.box.height) / 2;
-        this.box.x = 60 + xShift;
-        this.box.y = this.position + yShift + this.flyingProperties.flightAreaBox.y;
-    };
-    Bird.prototype.draw = function () {
-        gameDebugger.drawBox(this.domElement, this.box);
-        this.domElement.style.transform = "\n            translate3d(0px, " + this.position + "px, 0px)\n            rotate3d(0, 0, 1, " + this.rotation + "deg)\n        ";
-    };
-    return Bird;
-}());
-var Land = (function () {
-    function Land(domElement) {
-        this.domElement = domElement;
-        this.box = domElement.getBoundingClientRect();
-        gameDebugger.drawBox(this.domElement, this.box);
-    }
-    Land.prototype.intersectsWith = function (box) {
-        return isBoxIntersecting(this.box, box);
-    };
-    return Land;
-}());
-var Pipe = (function () {
-    function Pipe(options) {
-        this.scored = false;
-        this.upperBox = { x: 0, y: 0, width: 0, height: 0 };
-        this.lowerBox = { x: 0, y: 0, width: 0, height: 0 };
-        this.domElement = document.createElement('div');
-        this.domElement.className = 'pipe animated';
-        this.upperPipeDomElement = document.createElement('div');
-        this.upperPipeDomElement.className = 'pipe_upper';
-        this.upperPipeDomElement.style.height = options.topPipeHeight + "px";
-        this.lowerPipeDomElement = document.createElement('div');
-        this.lowerPipeDomElement.className = 'pipe_lower';
-        this.lowerPipeDomElement.style.height = options.bottomPipeHeight + "px";
-        this.domElement.appendChild(this.upperPipeDomElement);
-        this.domElement.appendChild(this.lowerPipeDomElement);
-    }
-    Pipe.prototype.isOffScreen = function () {
-        return this.upperBox.x <= -100;
-    };
-    Pipe.prototype.hasCrossed = function (box) {
-        return this.upperBox.width !== 0 && this.upperBox.x + this.upperBox.width <= box.x;
-    };
-    Pipe.prototype.intersectsWith = function (box) {
-        return isBoxIntersecting(this.upperBox, box) || isBoxIntersecting(this.lowerBox, box);
-    };
-    Pipe.prototype.tick = function () {
-        this.upperBox = this.upperPipeDomElement.getBoundingClientRect();
-        this.lowerBox = this.lowerPipeDomElement.getBoundingClientRect();
-        gameDebugger.drawBox(this.upperPipeDomElement, this.upperBox);
-        gameDebugger.drawBox(this.lowerPipeDomElement, this.lowerBox);
-    };
-    return Pipe;
-}());
-var PipeManager = (function () {
-    function PipeManager(pipeAreaDomElement) {
-        this.pipeDelay = 1400;
-        this.lastPipeInsertedTimestamp = 0;
-        this.pipes = [];
-        this.pipeAreaDomElement = pipeAreaDomElement;
-    }
-    PipeManager.prototype.tick = function (now) {
-        this.pipes.forEach(function (pipe) { return pipe.tick(); });
-        if (now - this.lastPipeInsertedTimestamp < this.pipeDelay) {
-            return;
-        }
-        gameDebugger.log('inserting pipe after', now - this.lastPipeInsertedTimestamp, 'ms');
-        this.lastPipeInsertedTimestamp = now;
-        var pipeDimension = this.createPipeDimensions({ gap: 90, minDistanceFromEdges: 80 });
-        var pipe = new Pipe(pipeDimension);
-        this.pipes.push(pipe);
-        this.pipeAreaDomElement.appendChild(pipe.domElement);
-        this.pipes = this.pipes.filter(function (pipe) {
-            if (pipe.isOffScreen()) {
-                gameDebugger.log('pruning a pipe');
-                pipe.domElement.remove();
-                return false;
-            }
-            return true;
-        });
-    };
-    PipeManager.prototype.intersectsWith = function (box) {
-        return this.pipes.find(function (pipe) { return pipe.intersectsWith(box); }) != null;
-    };
-    PipeManager.prototype.removeAll = function () {
-        this.pipes.forEach(function (pipe) { return pipe.domElement.remove(); });
-        this.pipes = [];
-    };
-    PipeManager.prototype.nextUnscoredPipe = function () {
-        return this.pipes.find(function (pipe) { return pipe.scored === false; });
-    };
-    PipeManager.prototype.createPipeDimensions = function (options) {
-        var topPipeHeight = this.randomNumberBetween(80, 250);
-        var bottomPipeHeight = 420 - options.gap - topPipeHeight;
-        return { topPipeHeight: topPipeHeight, bottomPipeHeight: bottomPipeHeight };
-    };
-    PipeManager.prototype.randomNumberBetween = function (min, max) {
-        return Math.floor(Math.random() * (max - min + 1)) + min;
-    };
-    return PipeManager;
 }());
 (function () {
     var bird = document.getElementById('player');
