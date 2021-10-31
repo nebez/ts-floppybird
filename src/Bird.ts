@@ -1,15 +1,15 @@
 namespace Floppy {
     export class Bird {
         protected domElement: HTMLElement;
-        protected flyingProperties: FlyingProperties;
+        protected flyingProperties: Floppy.Common.FlyingProperties;
         protected width!: number;
         protected height!: number;
         protected velocity!: number;
         protected position!: number;
         protected rotation!: number;
-        public box!: BoundingBox;
+        public box!: Floppy.Common.BoundingBox;
     
-        constructor(domElement: HTMLElement, flyingProperties: FlyingProperties) {
+        constructor(domElement: HTMLElement, flyingProperties: Floppy.Common.FlyingProperties) {
             this.domElement = domElement;
             this.flyingProperties = flyingProperties;
             this.reset();
@@ -26,7 +26,7 @@ namespace Floppy {
     
         public jump() {
             this.velocity = this.flyingProperties.jumpVelocity;
-            sounds.jump.play();
+            Floppy.Assets.sounds.jump.play();
         }
     
         public async die() {
@@ -36,10 +36,10 @@ namespace Floppy {
             this.position = this.flyingProperties.flightAreaBox.height - this.height;
             this.rotation = 90;
     
-            sounds.hit.play();
-            await wait(500);
-            sounds.die.play();
-            await wait(500);
+            Floppy.Assets.sounds.hit.play();
+            await Helpers.wait(500);
+            Floppy.Assets.sounds.die.play();
+            await Helpers.wait(500);
             this.domElement.style.transition = '';
         }
     
@@ -63,7 +63,7 @@ namespace Floppy {
             // the top and 5 px further from the left -- because it's 10 px wider
             // than it is tall. To make this easier, we first calculate the height
             // and width of our bird and then calculate its x,y based on that.
-            const rotationInRadians = Math.abs(toRad(this.rotation));
+            const rotationInRadians = Math.abs(Helpers.toRad(this.rotation));
             const widthMultiplier = this.height - this.width; // 24 - 34 = -10
             const heightMultiplier = this.width - this.height; // 34 - 24 = 10
     

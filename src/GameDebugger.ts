@@ -10,7 +10,7 @@ namespace Floppy {
             this.enabled = enabled;
         }
     
-        public drawBox(key: HTMLElement, box: BoundingBox) {
+        public drawBox(key: HTMLElement, box: Floppy.Common.BoundingBox) {
             if (!this.enabled) {
                 return;
             }
@@ -50,13 +50,13 @@ namespace Floppy {
             });
         }
     
-        public logStateChange(oldState: GameState, newState: GameState) {
+        public logStateChange(oldState: Floppy.Common.GameState, newState: Floppy.Common.GameState) {
             if (!this.enabled) {
                 return;
             }
     
-            this.log('Changing state', GameState[oldState], GameState[newState]);
-            this.domState.innerText = GameState[newState];
+            this.log('Changing state', Floppy.Common.GameState[oldState], Floppy.Common.GameState[newState]);
+            this.domState.innerText = Floppy.Common.GameState[newState];
         }
     
         public log(...args: any[]) {

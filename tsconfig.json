@@ -30,7 +30,7 @@
     "noFallthroughCasesInSwitch": true        /* Report errors for fallthrough cases in switch statement. */
   },
   "include": [
-    "src/game.ts",
+    "src/main.ts",
     "src/def/howler.d.ts"
   ]
 }

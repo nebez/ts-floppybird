@@ -1,7 +1,7 @@
 namespace Floppy {
     export class Land {
         public domElement: HTMLElement;
-        public box: BoundingBox;
+        public box: Floppy.Common.BoundingBox;
     
         constructor(domElement: HTMLElement) {
             this.domElement = domElement;
@@ -10,8 +10,8 @@ namespace Floppy {
             gameDebugger.drawBox(this.domElement, this.box);
         }
     
-        public intersectsWith(box: BoundingBox) {
-            return isBoxIntersecting(this.box, box);
+        public intersectsWith(box: Floppy.Common.BoundingBox) {
+            return Helpers.isBoxIntersecting(this.box, box);
         }
     }
 }

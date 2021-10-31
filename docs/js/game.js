@@ -1,33 +1,4 @@
 "use strict";
-var Floppy;
-(function (Floppy) {
-    var testLocalStorageWorks = function () {
-        try {
-            window.localStorage.setItem('test', 'test');
-            window.localStorage.removeItem('test');
-            return true;
-        }
-        catch (_a) {
-            return false;
-        }
-    };
-    var isLsEnabled = testLocalStorageWorks();
-    Floppy.storage = {
-        setHighScore: function (score) {
-            if (!isLsEnabled) {
-                return;
-            }
-            window.localStorage.setItem('highscore', score.toString());
-        },
-        getHighScore: function () {
-            var _a;
-            if (!isLsEnabled) {
-                return 0;
-            }
-            return parseInt((_a = window.localStorage.getItem('highscore')) !== null && _a !== void 0 ? _a : '0');
-        },
-    };
-})(Floppy || (Floppy = {}));
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -64,6 +35,68 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var Helpers;
+(function (Helpers) {
+    var _this = this;
+    Helpers.wait = function (time) { return __awaiter(_this, void 0, void 0, function () {
+        return __generator(this, function (_a) {
+            return [2, new Promise(function (resolve) {
+                    setTimeout(resolve, time);
+                })];
+        });
+    }); };
+    Helpers.toRad = function (degrees) {
+        return degrees * Math.PI / 180;
+    };
+    Helpers.isBoxIntersecting = function (a, b) {
+        return (a.x <= (b.x + b.width) &&
+            b.x <= (a.x + a.width) &&
+            a.y <= (b.y + b.height) &&
+            b.y <= (a.y + a.height));
+    };
+})(Helpers || (Helpers = {}));
+var Floppy;
+(function (Floppy) {
+    var testLocalStorageWorks = function () {
+        try {
+            window.localStorage.setItem('test', 'test');
+            window.localStorage.removeItem('test');
+            return true;
+        }
+        catch (_a) {
+            return false;
+        }
+    };
+    var isLsEnabled = testLocalStorageWorks();
+    Floppy.storage = {
+        setHighScore: function (score) {
+            if (!isLsEnabled) {
+                return;
+            }
+            window.localStorage.setItem('highscore', score.toString());
+        },
+        getHighScore: function () {
+            var _a;
+            if (!isLsEnabled) {
+                return 0;
+            }
+            return parseInt((_a = window.localStorage.getItem('highscore')) !== null && _a !== void 0 ? _a : '0');
+        },
+    };
+})(Floppy || (Floppy = {}));
+var Floppy;
+(function (Floppy) {
+    var Assets;
+    (function (Assets) {
+        Assets.sounds = {
+            jump: new Howl({ src: ['assets/sounds/sfx_wing.ogg'], volume: 0.3 }),
+            score: new Howl({ src: ['assets/sounds/sfx_point.ogg'], volume: 0.3 }),
+            hit: new Howl({ src: ['assets/sounds/sfx_hit.ogg'], volume: 0.3 }),
+            die: new Howl({ src: ['assets/sounds/sfx_die.ogg'], volume: 0.3 }),
+            swoosh: new Howl({ src: ['assets/sounds/sfx_swooshing.ogg'], volume: 0.3 }),
+        };
+    })(Assets = Floppy.Assets || (Floppy.Assets = {}));
+})(Floppy || (Floppy = {}));
 var Floppy;
 (function (Floppy) {
     var Bird = (function () {
@@ -82,7 +115,7 @@ var Floppy;
         };
         Bird.prototype.jump = function () {
             this.velocity = this.flyingProperties.jumpVelocity;
-            sounds.jump.play();
+            Floppy.Assets.sounds.jump.play();
         };
         Bird.prototype.die = function () {
             return __awaiter(this, void 0, void 0, function () {
@@ -92,12 +125,12 @@ var Floppy;
                             this.domElement.style.transition = "\n                transform 1s cubic-bezier(0.65, 0, 0.35, 1)\n            ";
                             this.position = this.flyingProperties.flightAreaBox.height - this.height;
                             this.rotation = 90;
-                            sounds.hit.play();
-                            return [4, wait(500)];
+                            Floppy.Assets.sounds.hit.play();
+                            return [4, Helpers.wait(500)];
                         case 1:
                             _a.sent();
-                            sounds.die.play();
-                            return [4, wait(500)];
+                            Floppy.Assets.sounds.die.play();
+                            return [4, Helpers.wait(500)];
                         case 2:
                             _a.sent();
                             this.domElement.style.transition = '';
@@ -116,7 +149,7 @@ var Floppy;
             if (this.position > this.flyingProperties.flightAreaBox.height) {
                 this.position = this.flyingProperties.flightAreaBox.height;
             }
-            var rotationInRadians = Math.abs(toRad(this.rotation));
+            var rotationInRadians = Math.abs(Helpers.toRad(this.rotation));
             var widthMultiplier = this.height - this.width;
             var heightMultiplier = this.width - this.height;
             this.box.width = this.width + (widthMultiplier * Math.sin(rotationInRadians));
@@ -133,6 +166,21 @@ var Floppy;
         return Bird;
     }());
     Floppy.Bird = Bird;
+})(Floppy || (Floppy = {}));
+var Floppy;
+(function (Floppy) {
+    var Common;
+    (function (Common) {
+        var GameState;
+        (function (GameState) {
+            GameState[GameState["Loading"] = 0] = "Loading";
+            GameState[GameState["SplashScreen"] = 1] = "SplashScreen";
+            GameState[GameState["Playing"] = 2] = "Playing";
+            GameState[GameState["PlayerDying"] = 3] = "PlayerDying";
+            GameState[GameState["PlayerDead"] = 4] = "PlayerDead";
+            GameState[GameState["ScoreScreen"] = 5] = "ScoreScreen";
+        })(GameState = Common.GameState || (Common.GameState = {}));
+    })(Common = Floppy.Common || (Floppy.Common = {}));
 })(Floppy || (Floppy = {}));
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -159,6 +207,220 @@ var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
     }
     return to.concat(ar || Array.prototype.slice.call(from));
 };
+var Floppy;
+(function (Floppy) {
+    var Game = (function () {
+        function Game(domElements, options) {
+            this.medals = [
+                [40, 'platinum'],
+                [30, 'gold'],
+                [20, 'silver'],
+                [10, 'bronze'],
+            ];
+            this.domElements = domElements;
+            this.options = options;
+            this.bird = new Floppy.Bird(domElements.bird, {
+                gravity: 0.25,
+                jumpVelocity: -4.6,
+                flightAreaBox: domElements.flightArea.getBoundingClientRect(),
+            });
+            this.pipes = new Floppy.PipeManager(domElements.flightArea);
+            this.land = new Floppy.Land(domElements.land);
+            this.state = Floppy.Common.GameState.Loading;
+            this.domElements.replayButton.onclick = this.onReplayTouch.bind(this);
+            this.highScore = Floppy.storage.getHighScore();
+            this.currentScore = 0;
+            requestAnimationFrame(this.draw.bind(this));
+        }
+        Game.prototype.onScreenTouch = function (ev) {
+            if (this.state === Floppy.Common.GameState.Playing) {
+                this.bird.jump();
+            }
+            else if (this.state === Floppy.Common.GameState.SplashScreen) {
+                this.start();
+            }
+            else if (this.state === Floppy.Common.GameState.ScoreScreen && ev instanceof KeyboardEvent) {
+                this.reset();
+            }
+        };
+        Game.prototype.splash = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var splashImage;
+                return __generator(this, function (_a) {
+                    splashImage = document.getElementById('splash');
+                    splashImage.classList.add('visible');
+                    Floppy.Assets.sounds.swoosh.play();
+                    this.state = Floppy.Common.GameState.SplashScreen;
+                    return [2];
+                });
+            });
+        };
+        Object.defineProperty(Game.prototype, "state", {
+            get: function () {
+                return this._state;
+            },
+            set: function (newState) {
+                gameDebugger.logStateChange(this._state, newState);
+                document.body.className = "state-" + Floppy.Common.GameState[newState];
+                this._state = newState;
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Game.prototype, "currentScore", {
+            get: function () {
+                return this._currentScore;
+            },
+            set: function (newScore) {
+                var _a, _b;
+                this._currentScore = newScore;
+                (_a = this.domElements.bigScore).replaceChildren.apply(_a, __spreadArray([], __read(this.numberToImageElements(newScore, 'big')), false));
+                (_b = this.domElements.currentScore).replaceChildren.apply(_b, __spreadArray([], __read(this.numberToImageElements(newScore, 'small')), false));
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Object.defineProperty(Game.prototype, "highScore", {
+            get: function () {
+                return this._highScore;
+            },
+            set: function (newScore) {
+                var _a;
+                this._highScore = newScore;
+                (_a = this.domElements.highScore).replaceChildren.apply(_a, __spreadArray([], __read(this.numberToImageElements(newScore, 'small')), false));
+                Floppy.storage.setHighScore(newScore);
+            },
+            enumerable: false,
+            configurable: true
+        });
+        Game.prototype.onReplayTouch = function () {
+            if (this.state === Floppy.Common.GameState.ScoreScreen) {
+                this.reset();
+            }
+        };
+        Game.prototype.reset = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var scoreboard;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            this.state = Floppy.Common.GameState.Loading;
+                            Floppy.Assets.sounds.swoosh.play();
+                            scoreboard = document.getElementById('scoreboard');
+                            scoreboard.classList.add('slide-up');
+                            return [4, Helpers.wait(750)];
+                        case 1:
+                            _a.sent();
+                            scoreboard.classList.remove('visible', 'slide-up');
+                            Array.from(scoreboard.getElementsByClassName('visible')).forEach(function (e) { return e.classList.remove('visible'); });
+                            gameDebugger.resetBoxes();
+                            this.pipes.removeAll();
+                            this.bird.reset();
+                            this.currentScore = 0;
+                            Array.from(document.getElementsByClassName('animated')).forEach(function (e) {
+                                e.style.animationPlayState = 'running';
+                                e.style.webkitAnimationPlayState = 'running';
+                            });
+                            this.splash();
+                            return [2];
+                    }
+                });
+            });
+        };
+        Game.prototype.start = function () {
+            var splashImage = document.getElementById('splash');
+            splashImage.classList.remove('visible');
+            this.state = Floppy.Common.GameState.Playing;
+            this.gameLoop = setInterval(this.tick.bind(this), 1000 / 60);
+            this.bird.jump();
+        };
+        Game.prototype.die = function () {
+            return __awaiter(this, void 0, void 0, function () {
+                var scoreboard, replay, wonMedal, medalContainer, medal;
+                var _this = this;
+                return __generator(this, function (_a) {
+                    switch (_a.label) {
+                        case 0:
+                            clearInterval(this.gameLoop);
+                            this.state = Floppy.Common.GameState.PlayerDying;
+                            Array.from(document.getElementsByClassName('animated')).forEach(function (e) {
+                                e.style.animationPlayState = 'paused';
+                                e.style.webkitAnimationPlayState = 'paused';
+                            });
+                            return [4, this.bird.die()];
+                        case 1:
+                            _a.sent();
+                            this.state = Floppy.Common.GameState.PlayerDead;
+                            return [4, Helpers.wait(500)];
+                        case 2:
+                            _a.sent();
+                            Floppy.Assets.sounds.swoosh.play();
+                            scoreboard = document.getElementById('scoreboard');
+                            scoreboard.classList.add('visible');
+                            return [4, Helpers.wait(600)];
+                        case 3:
+                            _a.sent();
+                            Floppy.Assets.sounds.swoosh.play();
+                            replay = document.getElementById('replay');
+                            replay.classList.add('visible');
+                            wonMedal = this.medals.find(function (_a) {
+                                var _b = __read(_a, 1), minimumScore = _b[0];
+                                return _this.currentScore >= minimumScore;
+                            });
+                            if (wonMedal) {
+                                gameDebugger.log('Medal won!', wonMedal);
+                                medalContainer = document.getElementById('medal');
+                                medal = new Image();
+                                medal.src = "assets/medal_" + wonMedal[1] + ".png";
+                                medalContainer.replaceChildren(medal);
+                                medalContainer.classList.add('visible');
+                            }
+                            return [4, Helpers.wait(300)];
+                        case 4:
+                            _a.sent();
+                            this.state = Floppy.Common.GameState.ScoreScreen;
+                            return [2];
+                    }
+                });
+            });
+        };
+        Game.prototype.score = function () {
+            gameDebugger.log('Score!');
+            Floppy.Assets.sounds.score.play();
+            this.currentScore++;
+            if (this.currentScore > this.highScore) {
+                gameDebugger.log('New highscore!', this.currentScore);
+                this.highScore = this.currentScore;
+            }
+        };
+        Game.prototype.numberToImageElements = function (digits, size) {
+            return digits.toString().split('').map(function (n) {
+                var imgDigit = new Image();
+                imgDigit.src = "assets/font_" + size + "_" + n + ".png";
+                return imgDigit;
+            });
+        };
+        Game.prototype.tick = function () {
+            var now = Date.now();
+            this.bird.tick();
+            this.pipes.tick(now);
+            var unscoredPipe = this.pipes.nextUnscoredPipe();
+            if (unscoredPipe && unscoredPipe.hasCrossed(this.bird.box)) {
+                unscoredPipe.scored = true;
+                this.score();
+            }
+            if (this.pipes.intersectsWith(this.bird.box) || this.land.intersectsWith(this.bird.box)) {
+                this.die();
+            }
+        };
+        Game.prototype.draw = function () {
+            requestAnimationFrame(this.draw.bind(this));
+            this.bird.draw();
+        };
+        return Game;
+    }());
+    Floppy.Game = Game;
+})(Floppy || (Floppy = {}));
 var Floppy;
 (function (Floppy) {
     var GameDebugger = (function () {
@@ -205,8 +467,8 @@ var Floppy;
             if (!this.enabled) {
                 return;
             }
-            this.log('Changing state', GameState[oldState], GameState[newState]);
-            this.domState.innerText = GameState[newState];
+            this.log('Changing state', Floppy.Common.GameState[oldState], Floppy.Common.GameState[newState]);
+            this.domState.innerText = Floppy.Common.GameState[newState];
         };
         GameDebugger.prototype.log = function () {
             var args = [];
@@ -233,7 +495,7 @@ var Floppy;
             gameDebugger.drawBox(this.domElement, this.box);
         }
         Land.prototype.intersectsWith = function (box) {
-            return isBoxIntersecting(this.box, box);
+            return Helpers.isBoxIntersecting(this.box, box);
         };
         return Land;
     }());
@@ -264,7 +526,7 @@ var Floppy;
             return this.upperBox.width !== 0 && this.upperBox.x + this.upperBox.width <= box.x;
         };
         Pipe.prototype.intersectsWith = function (box) {
-            return isBoxIntersecting(this.upperBox, box) || isBoxIntersecting(this.lowerBox, box);
+            return Helpers.isBoxIntersecting(this.upperBox, box) || Helpers.isBoxIntersecting(this.lowerBox, box);
         };
         Pipe.prototype.tick = function () {
             this.upperBox = this.upperPipeDomElement.getBoundingClientRect();
@@ -327,248 +589,9 @@ var Floppy;
     }());
     Floppy.PipeManager = PipeManager;
 })(Floppy || (Floppy = {}));
-var GameState;
-(function (GameState) {
-    GameState[GameState["Loading"] = 0] = "Loading";
-    GameState[GameState["SplashScreen"] = 1] = "SplashScreen";
-    GameState[GameState["Playing"] = 2] = "Playing";
-    GameState[GameState["PlayerDying"] = 3] = "PlayerDying";
-    GameState[GameState["PlayerDead"] = 4] = "PlayerDead";
-    GameState[GameState["ScoreScreen"] = 5] = "ScoreScreen";
-})(GameState || (GameState = {}));
-var sounds = {
-    jump: new Howl({ src: ['assets/sounds/sfx_wing.ogg'], volume: 0.3 }),
-    score: new Howl({ src: ['assets/sounds/sfx_point.ogg'], volume: 0.3 }),
-    hit: new Howl({ src: ['assets/sounds/sfx_hit.ogg'], volume: 0.3 }),
-    die: new Howl({ src: ['assets/sounds/sfx_die.ogg'], volume: 0.3 }),
-    swoosh: new Howl({ src: ['assets/sounds/sfx_swooshing.ogg'], volume: 0.3 }),
-};
-var wait = function (time) { return __awaiter(void 0, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        return [2, new Promise(function (resolve) {
-                setTimeout(resolve, time);
-            })];
-    });
-}); };
-var toRad = function (degrees) {
-    return degrees * Math.PI / 180;
-};
-var isBoxIntersecting = function (a, b) {
-    return (a.x <= (b.x + b.width) &&
-        b.x <= (a.x + a.width) &&
-        a.y <= (b.y + b.height) &&
-        b.y <= (a.y + a.height));
-};
-var gameDebugger = new Floppy.GameDebugger(true);
-var Game = (function () {
-    function Game(domElements) {
-        this.medals = [
-            [40, 'platinum'],
-            [30, 'gold'],
-            [20, 'silver'],
-            [10, 'bronze'],
-        ];
-        this.domElements = domElements;
-        this.bird = new Floppy.Bird(domElements.bird, {
-            gravity: 0.25,
-            jumpVelocity: -4.6,
-            flightAreaBox: domElements.flightArea.getBoundingClientRect(),
-        });
-        this.pipes = new Floppy.PipeManager(domElements.flightArea);
-        this.land = new Floppy.Land(domElements.land);
-        this.state = GameState.Loading;
-        this.domElements.replayButton.onclick = this.onReplayTouch.bind(this);
-        this.highScore = Floppy.storage.getHighScore();
-        this.currentScore = 0;
-        requestAnimationFrame(this.draw.bind(this));
-    }
-    Game.prototype.onScreenTouch = function (ev) {
-        if (this.state === GameState.Playing) {
-            this.bird.jump();
-        }
-        else if (this.state === GameState.SplashScreen) {
-            this.start();
-        }
-        else if (this.state === GameState.ScoreScreen && ev instanceof KeyboardEvent) {
-            this.reset();
-        }
-    };
-    Game.prototype.splash = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var splashImage;
-            return __generator(this, function (_a) {
-                splashImage = document.getElementById('splash');
-                splashImage.classList.add('visible');
-                sounds.swoosh.play();
-                this.state = GameState.SplashScreen;
-                return [2];
-            });
-        });
-    };
-    Object.defineProperty(Game.prototype, "state", {
-        get: function () {
-            return this._state;
-        },
-        set: function (newState) {
-            gameDebugger.logStateChange(this._state, newState);
-            document.body.className = "state-" + GameState[newState];
-            this._state = newState;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Game.prototype, "currentScore", {
-        get: function () {
-            return this._currentScore;
-        },
-        set: function (newScore) {
-            var _a, _b;
-            this._currentScore = newScore;
-            (_a = this.domElements.bigScore).replaceChildren.apply(_a, __spreadArray([], __read(this.numberToImageElements(newScore, 'big')), false));
-            (_b = this.domElements.currentScore).replaceChildren.apply(_b, __spreadArray([], __read(this.numberToImageElements(newScore, 'small')), false));
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(Game.prototype, "highScore", {
-        get: function () {
-            return this._highScore;
-        },
-        set: function (newScore) {
-            var _a;
-            this._highScore = newScore;
-            (_a = this.domElements.highScore).replaceChildren.apply(_a, __spreadArray([], __read(this.numberToImageElements(newScore, 'small')), false));
-            Floppy.storage.setHighScore(newScore);
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Game.prototype.onReplayTouch = function () {
-        if (this.state === GameState.ScoreScreen) {
-            this.reset();
-        }
-    };
-    Game.prototype.reset = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var scoreboard;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        this.state = GameState.Loading;
-                        sounds.swoosh.play();
-                        scoreboard = document.getElementById('scoreboard');
-                        scoreboard.classList.add('slide-up');
-                        return [4, wait(750)];
-                    case 1:
-                        _a.sent();
-                        scoreboard.classList.remove('visible', 'slide-up');
-                        Array.from(scoreboard.getElementsByClassName('visible')).forEach(function (e) { return e.classList.remove('visible'); });
-                        gameDebugger.resetBoxes();
-                        this.pipes.removeAll();
-                        this.bird.reset();
-                        this.currentScore = 0;
-                        Array.from(document.getElementsByClassName('animated')).forEach(function (e) {
-                            e.style.animationPlayState = 'running';
-                            e.style.webkitAnimationPlayState = 'running';
-                        });
-                        this.splash();
-                        return [2];
-                }
-            });
-        });
-    };
-    Game.prototype.start = function () {
-        var splashImage = document.getElementById('splash');
-        splashImage.classList.remove('visible');
-        this.state = GameState.Playing;
-        this.gameLoop = setInterval(this.tick.bind(this), 1000 / 60);
-        this.bird.jump();
-    };
-    Game.prototype.die = function () {
-        return __awaiter(this, void 0, void 0, function () {
-            var scoreboard, replay, wonMedal, medalContainer, medal;
-            var _this = this;
-            return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0:
-                        clearInterval(this.gameLoop);
-                        this.state = GameState.PlayerDying;
-                        Array.from(document.getElementsByClassName('animated')).forEach(function (e) {
-                            e.style.animationPlayState = 'paused';
-                            e.style.webkitAnimationPlayState = 'paused';
-                        });
-                        return [4, this.bird.die()];
-                    case 1:
-                        _a.sent();
-                        this.state = GameState.PlayerDead;
-                        return [4, wait(500)];
-                    case 2:
-                        _a.sent();
-                        sounds.swoosh.play();
-                        scoreboard = document.getElementById('scoreboard');
-                        scoreboard.classList.add('visible');
-                        return [4, wait(600)];
-                    case 3:
-                        _a.sent();
-                        sounds.swoosh.play();
-                        replay = document.getElementById('replay');
-                        replay.classList.add('visible');
-                        wonMedal = this.medals.find(function (_a) {
-                            var _b = __read(_a, 1), minimumScore = _b[0];
-                            return _this.currentScore >= minimumScore;
-                        });
-                        if (wonMedal) {
-                            gameDebugger.log('Medal won!', wonMedal);
-                            medalContainer = document.getElementById('medal');
-                            medal = new Image();
-                            medal.src = "assets/medal_" + wonMedal[1] + ".png";
-                            medalContainer.replaceChildren(medal);
-                            medalContainer.classList.add('visible');
-                        }
-                        return [4, wait(300)];
-                    case 4:
-                        _a.sent();
-                        this.state = GameState.ScoreScreen;
-                        return [2];
-                }
-            });
-        });
-    };
-    Game.prototype.score = function () {
-        gameDebugger.log('Score!');
-        sounds.score.play();
-        this.currentScore++;
-        if (this.currentScore > this.highScore) {
-            gameDebugger.log('New highscore!', this.currentScore);
-            this.highScore = this.currentScore;
-        }
-    };
-    Game.prototype.numberToImageElements = function (digits, size) {
-        return digits.toString().split('').map(function (n) {
-            var imgDigit = new Image();
-            imgDigit.src = "assets/font_" + size + "_" + n + ".png";
-            return imgDigit;
-        });
-    };
-    Game.prototype.tick = function () {
-        var now = Date.now();
-        this.bird.tick();
-        this.pipes.tick(now);
-        var unscoredPipe = this.pipes.nextUnscoredPipe();
-        if (unscoredPipe && unscoredPipe.hasCrossed(this.bird.box)) {
-            unscoredPipe.scored = true;
-            this.score();
-        }
-        if (this.pipes.intersectsWith(this.bird.box) || this.land.intersectsWith(this.bird.box)) {
-            this.die();
-        }
-    };
-    Game.prototype.draw = function () {
-        requestAnimationFrame(this.draw.bind(this));
-        this.bird.draw();
-    };
-    return Game;
-}());
+var isDebugOn = window.location.search.includes('debug');
+var isEasyModeOn = window.location.search.includes('easy');
+var gameDebugger = new Floppy.GameDebugger(isDebugOn);
 (function () {
     var bird = document.getElementById('player');
     var land = document.getElementById('land');
@@ -580,7 +603,7 @@ var Game = (function () {
     if (bird == null || flightArea == null || land == null || replayButton == null || bigScore == null || currentScore == null || highScore == null) {
         throw new Error('Missing an element');
     }
-    var game = new Game({ bird: bird, land: land, flightArea: flightArea, replayButton: replayButton, bigScore: bigScore, currentScore: currentScore, highScore: highScore });
+    var game = new Floppy.Game({ bird: bird, land: land, flightArea: flightArea, replayButton: replayButton, bigScore: bigScore, currentScore: currentScore, highScore: highScore }, { isDebugOn: isDebugOn, isEasyModeOn: isEasyModeOn });
     document.onkeydown = function (ev) { ev.keyCode == 32 && game.onScreenTouch(ev); };
     if ('ontouchstart' in document) {
         document.ontouchstart = game.onScreenTouch.bind(game);

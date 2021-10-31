@@ -37,7 +37,7 @@ namespace Floppy {
             });
         }
     
-        public intersectsWith(box: BoundingBox) {
+        public intersectsWith(box: Floppy.Common.BoundingBox) {
             return this.pipes.find(pipe => pipe.intersectsWith(box)) != null;
         }
     
