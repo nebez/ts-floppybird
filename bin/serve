@@ -2,5 +2,5 @@
 DIR=$(realpath "$(dirname "${BASH_SOURCE[0]}")")
 (
     cd "${DIR}"
-    ../node_modules/.bin/http-server -c-1 ./docs
+    ../node_modules/.bin/http-server -c-1 ../docs
 )
