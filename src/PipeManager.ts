@@ -4,9 +4,11 @@ namespace Floppy {
         protected pipeDelay = 1400;
         protected lastPipeInsertedTimestamp = 0;
         protected pipes: Floppy.Pipe[] = [];
+        protected easyMode;
     
-        constructor(pipeAreaDomElement: HTMLElement) {
+        constructor(pipeAreaDomElement: HTMLElement, easyMode: boolean = false) {
             this.pipeAreaDomElement = pipeAreaDomElement;
+            this.easyMode = easyMode;
         }
     
         public tick(now: number) {
@@ -21,7 +23,9 @@ namespace Floppy {
             // entirely off the screen
             gameDebugger.log('inserting pipe after', now - this.lastPipeInsertedTimestamp, 'ms');
             this.lastPipeInsertedTimestamp = now;
-            const pipeDimension = this.createPipeDimensions({ gap: 90, minDistanceFromEdges: 80 });
+            const pipeDimension = this.createPipeDimensions({
+                gap: this.easyMode ? 140 : 90,
+            });
             const pipe = new Floppy.Pipe(pipeDimension);
             this.pipes.push(pipe);
             this.pipeAreaDomElement.appendChild(pipe.domElement);
@@ -50,7 +54,7 @@ namespace Floppy {
             return this.pipes.find(pipe => pipe.scored === false);
         }
     
-        protected createPipeDimensions(options: { gap: number, minDistanceFromEdges: number }) {
+        protected createPipeDimensions(options: { gap: number }) {
             // The gap between pipes should be 90px. And the positioning of them
             // should be somewhere randomly within the flight area with sufficient
             // buffer from the top of bottom. Our entire "flight" area is 420px.
@@ -62,7 +66,9 @@ namespace Floppy {
             // vice versa). Another way of expressing this same thing would be:
             //     FlightHeight - PipeGap - TopPipeHeight = BottomPipeHeight
             //     420 - 90 - 80 = 250px
-            const topPipeHeight = this.randomNumberBetween(80, 250);
+            const topPipeBuffer = 80;
+            const bottomPipeBuffer = 420 - options.gap - topPipeBuffer;
+            const topPipeHeight = this.randomNumberBetween(topPipeBuffer, bottomPipeBuffer);
             const bottomPipeHeight = 420 - options.gap - topPipeHeight;
             return { topPipeHeight, bottomPipeHeight };
         }

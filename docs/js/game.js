@@ -218,18 +218,18 @@ var Floppy;
                 [10, 'bronze'],
             ];
             this.domElements = domElements;
-            this.options = options;
             this.bird = new Floppy.Bird(domElements.bird, {
                 gravity: 0.25,
                 jumpVelocity: -4.6,
                 flightAreaBox: domElements.flightArea.getBoundingClientRect(),
             });
-            this.pipes = new Floppy.PipeManager(domElements.flightArea);
+            this.pipes = new Floppy.PipeManager(domElements.flightArea, options.isEasyModeOn);
             this.land = new Floppy.Land(domElements.land);
             this.state = Floppy.Common.GameState.Loading;
             this.domElements.replayButton.onclick = this.onReplayTouch.bind(this);
             this.highScore = Floppy.storage.getHighScore();
             this.currentScore = 0;
+            this.setGameOptionButtons(options);
             requestAnimationFrame(this.draw.bind(this));
         }
         Game.prototype.onScreenTouch = function (ev) {
@@ -293,6 +293,19 @@ var Floppy;
             enumerable: false,
             configurable: true
         });
+        Game.prototype.setGameOptionButtons = function (options) {
+            var optionsButtons = document.getElementById('game-options');
+            var easyMode = optionsButtons.getElementsByClassName('option-easy')[0];
+            var debugMode = optionsButtons.getElementsByClassName('option-debug')[0];
+            easyMode.innerText = "easy mode (" + (options.isEasyModeOn ? 'ON' : 'OFF') + ")";
+            easyMode.href = '?';
+            easyMode.href += options.isEasyModeOn ? '' : 'easy';
+            easyMode.href += options.isDebugOn ? 'debug' : '';
+            debugMode.innerText = "debug (" + (options.isDebugOn ? 'ON' : 'OFF') + ")";
+            debugMode.href = '?';
+            debugMode.href += options.isEasyModeOn ? 'easy' : '';
+            debugMode.href += options.isDebugOn ? '' : 'debug';
+        };
         Game.prototype.onReplayTouch = function () {
             if (this.state === Floppy.Common.GameState.ScoreScreen) {
                 this.reset();
@@ -541,11 +554,13 @@ var Floppy;
 var Floppy;
 (function (Floppy) {
     var PipeManager = (function () {
-        function PipeManager(pipeAreaDomElement) {
+        function PipeManager(pipeAreaDomElement, easyMode) {
+            if (easyMode === void 0) { easyMode = false; }
             this.pipeDelay = 1400;
             this.lastPipeInsertedTimestamp = 0;
             this.pipes = [];
             this.pipeAreaDomElement = pipeAreaDomElement;
+            this.easyMode = easyMode;
         }
         PipeManager.prototype.tick = function (now) {
             this.pipes.forEach(function (pipe) { return pipe.tick(); });
@@ -554,7 +569,9 @@ var Floppy;
             }
             gameDebugger.log('inserting pipe after', now - this.lastPipeInsertedTimestamp, 'ms');
             this.lastPipeInsertedTimestamp = now;
-            var pipeDimension = this.createPipeDimensions({ gap: 90, minDistanceFromEdges: 80 });
+            var pipeDimension = this.createPipeDimensions({
+                gap: this.easyMode ? 140 : 90,
+            });
             var pipe = new Floppy.Pipe(pipeDimension);
             this.pipes.push(pipe);
             this.pipeAreaDomElement.appendChild(pipe.domElement);
@@ -578,7 +595,9 @@ var Floppy;
             return this.pipes.find(function (pipe) { return pipe.scored === false; });
         };
         PipeManager.prototype.createPipeDimensions = function (options) {
-            var topPipeHeight = this.randomNumberBetween(80, 250);
+            var topPipeBuffer = 80;
+            var bottomPipeBuffer = 420 - options.gap - topPipeBuffer;
+            var topPipeHeight = this.randomNumberBetween(topPipeBuffer, bottomPipeBuffer);
             var bottomPipeHeight = 420 - options.gap - topPipeHeight;
             return { topPipeHeight: topPipeHeight, bottomPipeHeight: bottomPipeHeight };
         };

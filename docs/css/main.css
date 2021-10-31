@@ -372,14 +372,28 @@ Screen - Game
    left: 3px;
 }
 
+#footer a
+{
+   display: block;
+}
+
 #footer a,
 #footer a:link,
 #footer a:visited,
 #footer a:hover,
 #footer a:active
 {
-   display: block;
    padding: 2px;
    text-decoration: none;
    color: #fff;
+}
+
+#game-options
+{
+   margin-bottom: 5px;
+}
+
+#game-options a
+{
+   display: inline-block;
 }

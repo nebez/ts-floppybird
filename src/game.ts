@@ -5,7 +5,6 @@ namespace Floppy {
         protected _currentScore!: number;
     
         protected domElements: Floppy.Common.GameHtmlElements;
-        protected options: Floppy.Common.GameOptions;
         protected bird: Floppy.Bird;
         protected land: Floppy.Land;
         protected pipes: Floppy.PipeManager;
@@ -20,18 +19,18 @@ namespace Floppy {
     
         constructor(domElements: Floppy.Common.GameHtmlElements, options: Floppy.Common.GameOptions) {
             this.domElements = domElements;
-            this.options = options;
             this.bird = new Floppy.Bird(domElements.bird, {
                 gravity: 0.25,
                 jumpVelocity: -4.6,
                 flightAreaBox: domElements.flightArea.getBoundingClientRect(),
             });
-            this.pipes = new Floppy.PipeManager(domElements.flightArea);
+            this.pipes = new Floppy.PipeManager(domElements.flightArea, options.isEasyModeOn);
             this.land = new Floppy.Land(domElements.land);
             this.state = Floppy.Common.GameState.Loading;
             this.domElements.replayButton.onclick = this.onReplayTouch.bind(this);
             this.highScore = Floppy.storage.getHighScore();
             this.currentScore = 0;
+            this.setGameOptionButtons(options);
     
             requestAnimationFrame(this.draw.bind(this));
         }
@@ -85,6 +84,22 @@ namespace Floppy {
             this._highScore = newScore;
             this.domElements.highScore.replaceChildren(...this.numberToImageElements(newScore, 'small'));
             Floppy.storage.setHighScore(newScore);
+        }
+
+        protected setGameOptionButtons(options: Floppy.Common.GameOptions) {
+            const optionsButtons = document.getElementById('game-options')!;
+            const easyMode = optionsButtons.getElementsByClassName('option-easy')[0] as HTMLAnchorElement;
+            const debugMode = optionsButtons.getElementsByClassName('option-debug')[0] as HTMLAnchorElement;
+
+            easyMode.innerText = `easy mode (${options.isEasyModeOn ? 'ON' : 'OFF' })`;
+            easyMode.href = '?';
+            easyMode.href += options.isEasyModeOn ? '' : 'easy';
+            easyMode.href += options.isDebugOn ? 'debug' : '';
+
+            debugMode.innerText = `debug (${options.isDebugOn ? 'ON' : 'OFF' })`;
+            debugMode.href = '?';
+            debugMode.href += options.isEasyModeOn ? 'easy' : '';
+            debugMode.href += options.isDebugOn ? '' : 'debug';
         }
     
         protected onReplayTouch() {
