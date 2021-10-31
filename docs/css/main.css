@@ -1,88 +1,27 @@
-@-webkit-keyframes animLand {
-   0% { background-position: 0px 0px; }
-   100% { background-position: -335px 0px; }
-}
-@-moz-keyframes animLand {
-   0% { background-position: 0px 0px; }
-   100% { background-position: -335px 0px; }
-}
-@-o-keyframes animLand {
-   0% { background-position: 0px 0px; }
-   100% { background-position: -335px 0px; }
-}
 @keyframes animLand {
    0% { background-position: 0px 0px; }
    100% { background-position: -335px 0px; }
 }
 
-@-webkit-keyframes animSky {
-   0% { background-position: 0px 100%; }
-   100% { background-position: -275px 100%; }
-}
-@-moz-keyframes animSky {
-   0% { background-position: 0px 100%; }
-   100% { background-position: -275px 100%; }
-}
-@-o-keyframes animSky {
-   0% { background-position: 0px 100%; }
-   100% { background-position: -275px 100%; }
-}
 @keyframes animSky {
    0% { background-position: 0px 100%; }
    100% { background-position: -275px 100%; }
 }
 
-@-webkit-keyframes animBird {
-   from { background-position: 0px 0px; }
-   to { background-position: 0px -96px; }
-}
-@-moz-keyframes animBird {
-   from { background-position: 0px 0px; }
-   to { background-position: 0px -96px; }
-}
-@-o-keyframes animBird {
-   from { background-position: 0px 0px; }
-   to { background-position: 0px -96px; }
-}
 @keyframes animBird {
    from { background-position: 0px 0px; }
    to { background-position: 0px -96px; }
 }
 
-@-webkit-keyframes animPipe {
-   0% { left: 900px; }
-   100% { left: -100px; }
-}
-@-moz-keyframes animPipe {
-   0% { left: 900px; }
-   100% { left: -100px; }
-}
-@-o-keyframes animPipe {
-   0% { left: 900px; }
-   100% { left: -100px; }
-}
 @keyframes animPipe {
-   0% { left: 900px; }
+   0% { left: 650px; }
    100% { left: -100px; }
 }
 
-@-webkit-keyframes animCeiling {
-   0% { background-position: 0px 0px; }
-   100% { background-position: -63px 0px; }
-}
-@-moz-keyframes animCeiling {
-   0% { background-position: 0px 0px; }
-   100% { background-position: -63px 0px; }
-}
-@-o-keyframes animCeiling {
-   0% { background-position: 0px 0px; }
-   100% { background-position: -63px 0px; }
-}
 @keyframes animCeiling {
    0% { background-position: 0px 0px; }
    100% { background-position: -63px 0px; }
 }
-
 
 *,
 *:before,
@@ -142,7 +81,6 @@ Screen - Game
    background-position: 0px 100%;
    background-color: #4ec0ca;
 
-   -webkit-animation: animSky 7s linear infinite;
    animation: animSky 7s linear infinite;
 }
 
@@ -163,7 +101,6 @@ Screen - Game
    background-image: url('../assets/ceiling.png');
    background-repeat: repeat-x;
 
-   -webkit-animation: animCeiling 481ms linear infinite;
    animation: animCeiling 481ms linear infinite;
 }
 
@@ -178,12 +115,18 @@ Screen - Game
    background-position: 0px 0px;
    background-color: #ded895;
 
-   -webkit-animation: animLand 2516ms linear infinite;
    animation: animLand 2516ms linear infinite;
+}
+
+.state-Playing #bigscore,
+.state-PlayerDying #bigscore
+{
+   visibility: visible;
 }
 
 #bigscore
 {
+   visibility: hidden;
    position: absolute;
    top: 20px;
    left: 150px;
@@ -206,21 +149,45 @@ Screen - Game
    height: 170px;
    background-image: url('../assets/splash.png');
    background-repeat: no-repeat;
+
+   transition: all 2000ms ease;
+}
+
+#splash.visible
+{
+   opacity: 1;
 }
 
 #scoreboard
 {
    position: absolute;
-   display: none;
-   opacity: 0;
    top: 64px;
    left: 43px;
    width: 236px;
    height: 280px;
    background-image: url('../assets/scoreboard.png');
    background-repeat: no-repeat;
-
    z-index: 1000;
+
+   /* Hidden by default, and popped down slightly */
+   visibility: hidden;
+   opacity: 0;
+   transform: translate3d(0px, 40px, 0px);
+
+   transition: all 600ms ease;
+}
+
+#scoreboard.visible
+{
+   visibility: visible;
+   opacity: 1;
+   transform: translate3d(0px, 0px, 0px);
+}
+
+#scoreboard.slide-up
+{
+   opacity: 0;
+   transform: translate3d(0px, -30px, 0px);
 }
 
 #medal
@@ -231,6 +198,13 @@ Screen - Game
    left: 32px;
    width: 44px;
    height: 44px;
+   transform: scale(2);
+   transition: all 1200ms ease;
+}
+
+#medal.visible {
+   opacity: 1;
+   transform: scale(1);
 }
 
 #currentscore
@@ -266,18 +240,55 @@ Screen - Game
 #replay
 {
    position: absolute;
-   opacity: 0;
    top: 205px;
    left: 61px;
-   height: 115px;
-   width: 70px;
+   height: 70px;
+   width: 115px;
    cursor: pointer;
+
+   /* Hidden by default, and popped down slightly */
+   opacity: 0;
+   transform: translate3d(0px, 40px, 0px);
+
+   transition: all 600ms ease;
+}
+
+#replay.visible
+{
+   opacity: 1;
+   transform: translate3d(0px, 0px, 0px);
+}
+
+#debug
+{
+   position: relative;
+   z-index: 9999;
+}
+
+#debug-state
+{
+   position: absolute;
+   top: 5px;
+   left: 5px;
+   font-size: 14px;
+   background: rgba(0, 0, 0, 0.35);
+   z-index: 99;
+}
+
+#debug-logs
+{
+   position: absolute;
+   bottom: 0px;
+   left: 700px;
+   white-space: pre;
+   background: rgba(0, 0, 0, 0.35);
+   z-index: 99;
 }
 
 .boundingbox
 {
    position: absolute;
-   display: none;
+   pointer-events: none;
    top: 0;
    left: 0;
    width: 0;
@@ -285,20 +296,16 @@ Screen - Game
    border: 1px solid red;
 }
 
-#player
-{
-   left: 60px;
-   top: 200px;
-}
-
 .bird
 {
    position: absolute;
+
+   left: 60px;
    width: 34px;
    height: 24px;
    background-image: url('../assets/bird.png');
+   will-change: transform;
 
-   -webkit-animation: animBird 300ms steps(4) infinite;
    animation: animBird 300ms steps(4) infinite;
 }
 
@@ -310,8 +317,12 @@ Screen - Game
    height: 100%;
    z-index: 10;
 
-   -webkit-animation: animPipe 7500ms linear;
-   animation: animPipe 7500ms linear;
+   /* Originally, this was 7500. Coupled with the animPipe distance of
+   moving each pipe left 1000px over the duration of the animation, it
+   makes it quite easy to adjust these two values in tandem. For each
+   pixel you move the pipe, multiply the distance by 7.5 to get the
+   total required animation time. For a 750px animation, use 5625ms */
+   animation: animPipe 5625ms linear;
 }
 
 .pipe_upper

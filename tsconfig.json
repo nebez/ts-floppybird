@@ -9,7 +9,7 @@
     "declaration": false,                     /* Generates corresponding '.d.ts' file. */
     "declarationMap": false,                  /* Generates a sourcemap for each corresponding '.d.ts' file. */
     "sourceMap": true,                        /* Generates corresponding '.map' file. */
-    "outDir": "./js/",                        /* Concatenate and emit output to single file. */
+    "outFile": "./docs/js/game.js",                        /* Concatenate and emit output to single file. */
     "removeComments": true,                   /* Do not emit comments to output. */
     "downlevelIteration": true,               /* Provide full support for iterables in 'for-of', spread, and destructuring when targeting 'ES5' or 'ES3'. */
 
@@ -30,7 +30,7 @@
     "noFallthroughCasesInSwitch": true        /* Report errors for fallthrough cases in switch statement. */
   },
   "include": [
-    "ts/game.ts",
-    "ts/howler.d.ts"
+    "src/game.ts",
+    "src/def/howler.d.ts"
   ]
 }
