@@ -144,10 +144,8 @@ var Floppy;
             this.rotation = Math.min((this.velocity / 10) * 90, 90);
             this.position += this.velocity;
             if (this.position < 0) {
+                gameDebugger.log('bottomBound', this.position);
                 this.position = 0;
-            }
-            if (this.position > this.flyingProperties.flightAreaBox.height) {
-                this.position = this.flyingProperties.flightAreaBox.height;
             }
             var rotationInRadians = Math.abs(Helpers.toRad(this.rotation));
             var widthMultiplier = this.height - this.width;

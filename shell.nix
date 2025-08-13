@@ -1,4 +1,9 @@
-with import <nixpkgs> {};
-mkShell {
-  buildInputs = [ nodejs-12_x ];
+let
+  sources = import ./nix/sources.nix;
+  pkgs = import sources.nixpkgs {};
+in
+pkgs.mkShell {
+  buildInputs = [
+    pkgs.nodejs_20
+  ];
 }
