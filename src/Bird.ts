@@ -53,8 +53,9 @@ namespace Floppy {
                 this.position = 0;
             }
     
-            if (this.position > this.flyingProperties.flightAreaBox.height) {
-                this.position = this.flyingProperties.flightAreaBox.height;
+            const bottomBound = this.flyingProperties.flightAreaBox.height - this.height;
+            if (this.position > bottomBound) {
+                this.position = bottomBound;
             }
     
             // We draw our bounding box around the bird through a couple steps. Our
